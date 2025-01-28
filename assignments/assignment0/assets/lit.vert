@@ -8,16 +8,19 @@ uniform mat4 _Model; //Model->World Matrix
 uniform mat4 _ViewProjection; //Combined View->Projection Matrix
 
 out Surface{
-	vec3 Normal;
+	vec3 WorldPos;
+	vec3 WorldNormal;
 	vec2 TexCoord;
 }vs_out;
 
 
 
 void main(){
-	vs_out.Normal = vNormal;	
+	vs_out.WorldPos = vec3(_Model * vec4(vPos,1.0));
+	//Transform vertex normal to world space using Normal Matrix
+	vs_out.WorldNormal = transpose(inverse(mat3(_Model))) * vNormal;
 vs_out.TexCoord = vTexCoord;
-//Set vertex position in homogeneous clip space
 gl_Position = _ViewProjection * _Model * vec4(vPos,1.0);
+
 
 }
