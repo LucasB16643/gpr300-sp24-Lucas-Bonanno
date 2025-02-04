@@ -44,7 +44,7 @@ struct Material {
 }material;
 
 
-
+unsigned int fbo;
 
 int main() {
 	GLFWwindow* window = initWindow("Assignment 0", screenWidth, screenHeight);
@@ -53,6 +53,8 @@ int main() {
 	ew::Shader shader = ew::Shader("assets/lit.vert", "assets/lit.frag");
 	ew::Model monkeyModel = ew::Model("assets/suzanne.obj");
 	GLuint brickTexture = ew::loadTexture("assets/new_color.jpg");
+	GLuint brickNormal = ew::loadTexture("assets/new_color_normal.jpg");
+
 	
 	camera.position = glm::vec3(0.0f, 0.0f, 5.0f);
 	camera.target = glm::vec3(0.0f, 0.0f, 0.0f); //Look at the center of the scene
@@ -62,6 +64,38 @@ int main() {
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK); //Back face culling
 	glEnable(GL_DEPTH_TEST); //Depth testing
+
+	
+
+
+	glGenFramebuffers(1, &fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0)
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+
+	unsigned int rbo;
+	glGenRenderbuffers(1, &rbo);
+	glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
+	glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+	unsigned int dummyVAO;
+	glCreateVertexArrays(1, &dummyVAO);
+
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	
 
@@ -81,10 +115,13 @@ int main() {
 		cameraController.move(window, &camera, deltaTime);
 
 		//Bind brick texture to texture unit 0 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, brickTexture);
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // we're not using the stencil buffer now
+		glEnable(GL_DEPTH_TEST);
 		//Make "_MainTex" sampler2D sample from the 2D texture bound to unit 0
-	
+		glBindTextureUnit(0, brickTexture);
+		glBindTextureUnit(1, brickNormal);
 	
 
 
@@ -99,6 +136,15 @@ int main() {
 		shader.setVec3("_EyePos", camera.position);
 		monkeyModel.draw();
 
+		glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		screenShader.use();
+		glBindVertexArray(dummyVAO);
+		glDisable(GL_DEPTH_TEST);
+		glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		drawUI();
 
