@@ -1,7 +1,7 @@
 #version 450
 out vec4 FragColor; //The color of this fragment
 in Surface{
-vec3 WorldPos;
+    vec3 WorldPos;
 	vec3 WorldNormal;
 	vec2 TexCoord;
 }fs_in;
