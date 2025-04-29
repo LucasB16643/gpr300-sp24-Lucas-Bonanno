@@ -16,6 +16,7 @@
 #include <ew/texture.h>
 #include "ew/procGen.h"
 #include <array>
+#include <iostream>
 using namespace std;
 
 
@@ -77,8 +78,11 @@ public:
 	Vec3Key* positionKey[2];
 	Vec3Key* rotationKey[2];
 	Vec3Key* scaleKey[2];
+
+	
 };
 AnimationClip newClip;
+
 
 class Animator {
 public:
@@ -192,9 +196,9 @@ void animate(float cTime, AnimationClip keyFrames) {
 
 };
 
-void newKeyFrame(AnimationClip clip) {
+/*void newKeyFrame(AnimationClip clip) {
 
-	/*if (newPosFrame = true) {
+	if (newPosFrame = true) {
 		Vec3Key* newPos[size(clip.positionKey) + 1];
 		for (int i = 0; i < size(clip.positionKey); i++) {
 			newPos[i] = clip.positionKey[i];
@@ -202,11 +206,11 @@ void newKeyFrame(AnimationClip clip) {
 		newPos[size(clip.positionKey) - 1]->time = clip.duration;
 		newPos[size(clip.positionKey) - 1]->value = glm::vec3(0, 0, 0);
 		clip.positionKey = newPos;
-	}*/
+	}
 
 
 
-}
+}*/
 
 unsigned int depthMap;
 float frametime = 0;
@@ -219,6 +223,7 @@ int main() {
 	ew::Shader depthShader = ew::Shader("assets/depthShader.vert", "assets/depthShader.frag");
 	ew::Model monkeyModel = ew::Model("assets/suzanne.obj");
 	GLuint brickTexture = ew::loadTexture("assets/new_color.jpg");
+	ew::Model mountModel = ew::Model("assets/MountainTerrain.obj");
 	
 	camera.position = glm::vec3(0.0f, 0.0f, 5.0f);
 	camera.target = glm::vec3(0.0f, 0.0f, 0.0f); //Look at the center of the scene
@@ -228,6 +233,10 @@ int main() {
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK); //Back face culling
 	glEnable(GL_DEPTH_TEST); //Depth testing
+
+	
+
+
 	Vec3Key* firstPos = new Vec3Key;
 	firstPos->time = 0;
 	firstPos->value = glm::vec3(0, 0, 0);
@@ -413,7 +422,7 @@ int main() {
 
 
 		depthShader.setMat4("model", planeTransform.modelMatrix());
-		planeMesh.draw();
+		mountModel.draw();
 		
 		glCullFace(GL_BACK);
 
@@ -456,7 +465,7 @@ int main() {
 		monkeyModel.draw();
 
 		shader.setMat4("_Model", planeTransform.modelMatrix());
-		planeMesh.draw();
+		mountModel.draw();
 
 		/*glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glClearColor(0.6f, 0.09f, 0.92f, 1.0f);
